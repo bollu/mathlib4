@@ -13,6 +13,7 @@ import Mathlib.Tactic.Ext
 import Mathlib.Tactic.Find
 import Mathlib.Tactic.LeftRight
 import Mathlib.Tactic.LibrarySearch
+import Mathlib.Tactic.TryFor
 import Mathlib.Tactic.NormCast
 import Mathlib.Tactic.NormNum
 import Mathlib.Tactic.RCases
@@ -245,7 +246,6 @@ end Conv
 /- M -/ syntax (name := injectionsAndClear) "injections_and_clear" : tactic
 
 /- E -/ syntax (name := fconstructor) "fconstructor" : tactic
-/- E -/ syntax (name := tryFor) "try_for " term:max tacticSeq : tactic
 /- E -/ syntax (name := substs) "substs" (ppSpace ident)* : tactic
 /- E -/ syntax (name := unfoldCoes) "unfold_coes" (ppSpace location)? : tactic
 /- E -/ syntax (name := unfoldWf) "unfold_wf" : tactic
