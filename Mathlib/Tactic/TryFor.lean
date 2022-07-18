@@ -32,7 +32,9 @@ def tacticSeq :=
 elab "try_for " timeStx:num  ts:tacticSeq : tactic => do
   let time := timeStx.getNat
   withCurrHeartbeats (do
-    checkMaxHeartbeatsCore "Mathlib.Tactic.Tryfor" `maxHeartbeats time
+    -- multiply time by 1000 because Lean internally divides by 
+    -- 1000 to report error messages
+    checkMaxHeartbeatsCore "Mathlib.Tactic.Tryfor" `maxHeartbeats (time*1000)
     evalTactic ts
   )
 
@@ -43,7 +45,7 @@ def ackermann: Nat -> Nat -> Nat
 | (m+1),  (n+1) => ackermann m (ackermann (m+1) n)
 termination_by _ m n => (m, n)
 
-def thm_success : ackermann 4 1 = 11 := by {
+def thm_success : ackermann 4 5 = 211 := by {
   rfl;
 }
 #print thm_success
