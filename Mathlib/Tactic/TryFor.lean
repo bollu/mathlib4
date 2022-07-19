@@ -2,7 +2,7 @@ import Lean
 open Lean
 open Meta
 open Elab
-open Tactic
+    open Tactic
 open Core
 
 syntax (name := tryFor) "try_for " term:max tacticSeq : tactic
@@ -26,15 +26,62 @@ def tacticSeq :=
 #check maxHeartbeats
 #check TacticM
 #check ReaderT
+
+-- def liftCoreM (x: CoreM α): TacticM α := do 
+--   withReader (fun ctx => {} ) x
+
+-- def setMaxHeartbeatsCore (max : Nat) (x: CoreM α): CoreM α := do
+--   modifyMCtx (fun mctx => 
+--    withReader (fun ctx => { ctx with maxHeartbeats := max }) x
+
+-- abbrev TacticM := ReaderT Context $ StateRefT State TermElabM
+-- abbrev TermElabM := ReaderT Context $ StateRefT State MetaM
+-- abbrev MetaM  := ReaderT Context $ StateRefT State CoreM
+-- abbrev CoreM := ReaderT Context <| StateRefT State (EIO Exception)
+-- structure Context where
+--   fileName       : String
+--   fileMap        : FileMap
+--   options        : Options := {}
+--   currRecDepth   : Nat := 0
+--   maxRecDepth    : Nat := 1000
+--   ref            : Syntax := Syntax.missing
+--   currNamespace  : Name := Name.anonymous
+--   openDecls      : List OpenDecl := []
+--   initHeartbeats : Nat := 0
+--   maxHeartbeats  : Nat := getMaxHeartbeats options
+--   currMacroScope : MacroScope := firstFrontendMacroScope
+#check CoreM
+#check MetaM
+#check TermElabM
+#check TacticM
+
+
+private def startTryForCoreM (max: Nat) (x : CoreM α) : CoreM α := do
+  let heartbeats ← IO.getNumHeartbeats
+  withReader (fun ctx => { ctx with initHeartbeats := heartbeats, maxHeartbeats := max }) x
+
+#check controlAt
+def withStartTryForCoreM [Monad m] [MonadControlT CoreM m] (max: Nat) (x : m α) : m α :=
+  controlAt CoreM fun runInBase => startTryForCoreM max (runInBase x)
+  
+
+
+/-
+instance : MonadCoreCtx MetaM where 
+  withCoreCtx k := do
+    s <- StateT.get 
+-/
+
+-- def modifyCoreContext (ctx: Core.Context -> Core.Context) (t: TacticM Unit): TacticM Unit := 
+--   modifyMCtx
+
 -- | Changed type of time from `term` to `num` because all uses use
 --   numeric literals.
 -- elab "try_for " time:term  ts:tacticSeq : tactic => do
 elab "try_for " timeStx:num  ts:tacticSeq : tactic => do
   let time := timeStx.getNat
-  withCurrHeartbeats (do
-    -- multiply time by 1000 because Lean internally divides by 
-    -- 1000 to report error messages
-    checkMaxHeartbeatsCore "Mathlib.Tactic.Tryfor" `maxHeartbeats (time*1000)
+  withStartTryForCoreM (time*1000) (do
+    -- checkMaxHeartbeatsCore "Mathlib.Tactic.Tryfor" `maxHeartbeats (time*1000)
     evalTactic ts
   )
 
@@ -46,7 +93,7 @@ def ackermann: Nat -> Nat -> Nat
 termination_by _ m n => (m, n)
 
 def thm_success : ackermann 4 5 = 211 := by {
-  rfl;
+  try_for 2 rfl;
 }
 #print thm_success
 
