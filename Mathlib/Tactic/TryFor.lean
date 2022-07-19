@@ -7,6 +7,11 @@ open Core
 
 syntax (name := tryFor) "try_for " term:max tacticSeq : tactic
 
+elab "printReduced" t:term : command => do 
+  return ()
+   
+
+
 
 #check checkMaxHeartbeats
 #check withCurrHeartbeats
@@ -54,6 +59,9 @@ def tacticSeq :=
 #check MetaM
 #check TermElabM
 #check TacticM
+#check CommandElabM
+
+-- norm_num
 
 
 private def startTryForCoreM (max: Nat) (x : CoreM α) : CoreM α := do
@@ -81,9 +89,17 @@ instance : MonadCoreCtx MetaM where
 elab "try_for " timeStx:num  ts:tacticSeq : tactic => do
   let time := timeStx.getNat
   withStartTryForCoreM (time*1000) (do
-    -- checkMaxHeartbeatsCore "Mathlib.Tactic.Tryfor" `maxHeartbeats (time*1000)
+    checkMaxHeartbeatsCore "Mathlib.Tactic.Tryfor" `maxHeartbeats 999
     evalTactic ts
   )
+  
+
+
+-- # a ≤ b 
+#check Expr.
+  
+set_option pp.all true in 
+#reduce 1 < 2
 
 
 def ackermann: Nat -> Nat -> Nat
