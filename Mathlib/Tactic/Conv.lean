@@ -4,6 +4,11 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Author: Gabriel Ebner
 -/
 import Mathlib.Tactic.RunTac
+import Mathlib.Tactic.Core
+-- open Lean Parser.Tactic Parser.Tactic.Conv
+-- open Lean Elab Tactic
+
+
 
 /-!
 Additional `conv` tactics.
@@ -31,3 +36,4 @@ macro "run_conv" e:doSeq : conv => `(conv| tactic' => run_tac $e)
 
 macro (name := find) "find " pat:term " => " seq:convSeq : conv =>
   `(conv| conv => pattern $pat; ($seq:convSeq))
+  

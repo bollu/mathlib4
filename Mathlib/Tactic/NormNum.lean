@@ -6,6 +6,13 @@ Authors: Mario Carneiro
 import Lean.Elab.Tactic.Basic
 import Mathlib.Algebra.Ring.Basic
 import Mathlib.Tactic.Core
+-- import Mathlib.Tactic.NormCast.Ext
+-- import Mathlib.Tactic.OpenPrivate
+-- import Mathlib.Tactic.SudoSetOption
+-- import Mathlib.Util.Simp
+-- import Mathlib.Algebra.Group.Defs
+
+open Lean Meta Simp
 
 namespace Lean
 
@@ -164,3 +171,16 @@ example : (0 + (2 + 3) + 1 : α) = 6 := by norm_num
 example : (70 * (33 + 2) : α) = 2450 := by norm_num
 example : (8 + 2 ^ 2 * 3 : α) = 20 := by norm_num
 example : ((2 * 1 + 1) ^ 2 : α) = (3 * 3 : α) := by norm_num
+
+
+/-
+syntax (name := convNormCast) "norm_cast" : conv
+@[tactic convNormCast] def evalConvNormCast : Tactic :=
+  open Elab.Tactic.Conv in fun _ => withMainContext do
+    applySimpResult (← derive (← getLhs))
+-/
+syntax (name := normNum) "norm_num" (" [" Lean.Parser.Tactic.simpArg,* "]")? : conv
+-- syntax (name := convNormNum) "norm_num" : conv
+@[tactic normNum] def evalConvNormCast : Tactic :=
+  open Elab.Tactic.Conv in fun _ => withMainContext do
+    applySimpResult (← derive (← getLhs))
